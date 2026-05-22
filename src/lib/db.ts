@@ -7,7 +7,7 @@ function rowToPlace(r: Record<string, any>): Place {
     id: r.slug,
     name: r.name,
     category: r.category_slug ?? '',
-    subcategory: r.subcategory_label ?? '',
+    subcategory: r.subcategory ?? '',
     cuisine: r.cuisine ?? [],
     area: r.area ?? '',
     city: r.city ?? '',
