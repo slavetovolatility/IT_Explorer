@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Emergency Numbers in Thailand — Inside Thailand',
+  description: 'Tourist police 1155, ambulance 1669, fire, marine police, and embassy direct lines for Bangkok and Phuket.',
+}
+
 const numbers = [
   { id: 1, label: 'Tourist Police (24/7 English)', num: '1155', tone: 'brand' },
   { id: 2, label: 'General emergency',             num: '191',  tone: 'teal'  },

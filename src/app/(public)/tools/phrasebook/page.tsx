@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Thai Phrasebook — Inside Thailand',
+  description: '50 Thai phrases that actually get you what you want — food, transport, taxis, bargaining, and emergencies.',
+}
+
 const phrases = [
   { th: 'Sawatdee khrap / kha',   en: 'Hello (M / F)',            use: 'Greeting' },
   { th: 'Khop khun khrap / kha',  en: 'Thank you (M / F)',        use: 'Always' },

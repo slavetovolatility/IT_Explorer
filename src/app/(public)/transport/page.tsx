@@ -2,6 +2,12 @@ import Link from 'next/link'
 import { STATIONS } from '@/data'
 import { SectionHead } from '@/components/ui/SectionHead'
 import I from '@/components/ui/icons'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Bangkok Transport Guide · BTS, MRT & More — Inside Thailand',
+  description: 'BTS Skytrain, MRT Metro, Airport Rail Link — fares, stations, and what each area is actually known for.',
+}
 
 const modes = [
   { id: 'bts',  name: 'BTS Skytrain',      color: '#1F8A5B', icon: 'train',      cost: '฿17–62',    summary: 'Elevated train. Cleanest, most reliable.' },

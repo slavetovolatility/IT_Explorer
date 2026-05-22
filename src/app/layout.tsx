@@ -22,6 +22,7 @@ const mono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://insidethailand.com'),
   title: 'Inside Thailand — the local edge',
   description:
     'A discovery hub for places, food, transport, and the practical stuff — written by people who actually live here, not a marketing department.',

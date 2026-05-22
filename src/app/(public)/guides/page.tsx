@@ -2,6 +2,12 @@ import Link from 'next/link'
 import { GUIDES, ESSENTIAL_APPS } from '@/data'
 import { SectionHead } from '@/components/ui/SectionHead'
 import I from '@/components/ui/icons'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'How-to Guides — Inside Thailand',
+  description: 'Practical step-by-step guides for living and travelling in Thailand — SIM cards, visas, bank accounts, and transport apps.',
+}
 
 export default function GuidesPage() {
   const groups: Record<string, typeof GUIDES> = {}

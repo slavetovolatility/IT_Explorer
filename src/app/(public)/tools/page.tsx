@@ -1,5 +1,11 @@
 import { TOURIST_TOOLS } from '@/data'
 import { ToolCard } from '@/app/(public)/page'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Tourist Tools — Inside Thailand',
+  description: 'Practical utilities for Thailand travel — scam detector, price checker, phrasebook, emergency numbers, and SIM finder.',
+}
 
 export default function ToolsPage() {
   return (

@@ -1,3 +1,10 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Best SIM Card in Thailand — Inside Thailand',
+  description: 'AIS, dtac, and TrueMove H compared — which carrier wins in Bangkok, the islands, and rural areas.',
+}
+
 const carriers = [
   { name: 'AIS',        strength: 'Strongest in cities', cost: '฿299 / 7d' },
   { name: 'dtac',       strength: 'Best on islands',     cost: '฿299 / 7d' },

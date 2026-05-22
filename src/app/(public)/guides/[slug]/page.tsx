@@ -2,6 +2,21 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { GUIDES } from '@/data'
 import I from '@/components/ui/icons'
+import type { Metadata } from 'next'
+
+export function generateStaticParams() {
+  return GUIDES.map(g => ({ slug: g.id }))
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const g = GUIDES.find(x => x.id === slug)
+  if (!g) return {}
+  return {
+    title: `${g.title} — Inside Thailand`,
+    description: g.body.slice(0, 155),
+  }
+}
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
