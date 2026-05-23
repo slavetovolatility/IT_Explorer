@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUIStore } from '@/store/ui'
+import { supabase } from '@/lib/supabase'
 import { CITIES } from '@/data'
 import I from '@/components/ui/icons'
 
@@ -81,6 +82,9 @@ export function Header() {
 function ProfileMenu() {
   const [open, setOpen] = useState(false)
   const signOut = useUIStore(s => s.signOut)
+  const userEmail = useUIStore(s => s.userEmail)
+  const initials = userEmail ? userEmail.slice(0, 2).toUpperCase() : '?'
+  const displayName = userEmail ? userEmail.split('@')[0] : 'User'
 
   useEffect(() => {
     if (!open) return
@@ -90,6 +94,12 @@ function ProfileMenu() {
     document.addEventListener('click', close)
     return () => document.removeEventListener('click', close)
   }, [open])
+
+  const handleSignOut = async () => {
+    if (supabase) await supabase.auth.signOut()
+    signOut()
+    setOpen(false)
+  }
 
   const menuRow: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: 10,
@@ -104,7 +114,7 @@ function ProfileMenu() {
         aria-label="Profile"
         style={{ background: 'var(--bg-deep)', color: 'var(--text-on-deep)', boxShadow: 'none' }}
       >
-        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13 }}>SK</span>
+        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 13 }}>{initials}</span>
       </button>
       {open && (
         <div style={{
@@ -113,8 +123,8 @@ function ProfileMenu() {
           minWidth: 220, padding: 8, border: '1px solid var(--line)',
         }}>
           <div style={{ padding: '10px 12px 12px', borderBottom: '1px solid var(--line)' }}>
-            <div style={{ fontWeight: 600, fontSize: 14 }}>Sai K.</div>
-            <div style={{ color: 'var(--muted)', fontSize: 12 }}>sai@example.com</div>
+            <div style={{ fontWeight: 600, fontSize: 14 }}>{displayName}</div>
+            <div style={{ color: 'var(--muted)', fontSize: 12 }}>{userEmail}</div>
           </div>
           <Link href="/saved" style={menuRow}><I.bookmark size={16}/> Saved places</Link>
           <Link href="/account" style={menuRow}><I.user size={16}/> Recently viewed</Link>
@@ -122,7 +132,7 @@ function ProfileMenu() {
           <Link href="/account" style={menuRow}><I.sliders size={16}/> Account &amp; settings</Link>
           <div style={{ borderTop: '1px solid var(--line)', margin: '6px -8px 0' }}/>
           <button
-            onClick={() => { signOut(); setOpen(false) }}
+            onClick={handleSignOut}
             style={{ ...menuRow, width: '100%', border: 0, background: 'transparent', textAlign: 'left', cursor: 'pointer' }}
           >
             Sign out

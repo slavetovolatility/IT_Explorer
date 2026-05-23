@@ -76,5 +76,6 @@ I.coffee    = (p={}) => wrap(<><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z
 I.beach     = (p={}) => wrap(<><circle cx="6" cy="6" r="3"/><path d="M6 9v13M2 17c2-2 8-2 10 0M14 20c2-2 8-2 10 0"/><path d="M6 9c6 1 14 2 16-3"/></>, p)
 I.send      = (p={}) => wrap(<><path d="M3 12 21 3l-7 18-3-7z"/><path d="m10 14 4-4"/></>, p)
 I.refresh   = (p={}) => wrap(<><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></>, p)
+I.mail      = (p={}) => wrap(<><rect x="3" y="6" width="18" height="13" rx="2"/><path d="m3 6 9 7 9-7"/></>, p)
 
 export default I

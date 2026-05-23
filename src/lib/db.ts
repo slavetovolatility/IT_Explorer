@@ -69,3 +69,25 @@ export async function fetchCategories(): Promise<Category[]> {
   if (error) { console.error('[db] fetchCategories:', error.message); return [] }
   return (data ?? []).map(rowToCategory)
 }
+
+export async function fetchSavedSlugs(userId: string): Promise<string[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('saved_places').select('place_slug').eq('user_id', userId)
+  if (error) { console.error('[db] fetchSavedSlugs:', error.message); return [] }
+  return (data ?? []).map(r => r.place_slug)
+}
+
+export async function upsertSaved(userId: string, placeSlug: string): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase
+    .from('saved_places').upsert({ user_id: userId, place_slug: placeSlug })
+  if (error) console.error('[db] upsertSaved:', error.message)
+}
+
+export async function deleteSaved(userId: string, placeSlug: string): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase
+    .from('saved_places').delete().eq('user_id', userId).eq('place_slug', placeSlug)
+  if (error) console.error('[db] deleteSaved:', error.message)
+}

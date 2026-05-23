@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { upsertSaved, deleteSaved } from '@/lib/db'
 
 interface UIState {
   city: string
@@ -6,9 +7,12 @@ interface UIState {
 
   savedSet: Set<string>
   toggleSave: (id: string) => void
+  loadSaved: (ids: string[]) => void
 
+  userId: string | null
+  userEmail: string | null
   signedIn: boolean
-  signIn: () => void
+  signIn: (userId: string, email: string) => void
   signOut: () => void
 
   drawerOpen: boolean
@@ -17,21 +21,30 @@ interface UIState {
   showCannabis: boolean
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>((set, get) => ({
   city: 'bangkok',
   setCity: (city) => set({ city }),
 
-  savedSet: new Set(['or-tor-kor', 'wat-arun']),
-  toggleSave: (id) =>
-    set((state) => {
-      const next = new Set(state.savedSet)
-      if (next.has(id)) { next.delete(id) } else { next.add(id) }
-      return { savedSet: next }
-    }),
+  savedSet: new Set<string>(),
+  toggleSave: (id) => {
+    const state = get()
+    const next = new Set(state.savedSet)
+    if (next.has(id)) {
+      next.delete(id)
+      if (state.userId) deleteSaved(state.userId, id)
+    } else {
+      next.add(id)
+      if (state.userId) upsertSaved(state.userId, id)
+    }
+    set({ savedSet: next })
+  },
+  loadSaved: (ids) => set({ savedSet: new Set(ids) }),
 
+  userId: null,
+  userEmail: null,
   signedIn: false,
-  signIn: () => set({ signedIn: true }),
-  signOut: () => set({ signedIn: false }),
+  signIn: (userId, email) => set({ signedIn: true, userId, userEmail: email }),
+  signOut: () => set({ signedIn: false, userId: null, userEmail: null, savedSet: new Set() }),
 
   drawerOpen: false,
   setDrawerOpen: (drawerOpen) => set({ drawerOpen }),
