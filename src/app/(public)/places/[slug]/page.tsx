@@ -4,6 +4,7 @@ import { use } from 'react'
 import Link from 'next/link'
 import { useUIStore } from '@/store/ui'
 import { PLACES, CATEGORIES, STATIONS } from '@/data'
+import { usePlace } from '@/hooks/usePlaces'
 import { Slot } from '@/components/ui/Slot'
 import { PriceMark } from '@/components/ui/PriceMark'
 import { StarRating } from '@/components/ui/StarRating'
@@ -14,7 +15,7 @@ import I from '@/components/ui/icons'
 
 export default function PlacePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
-  const place = PLACES.find(p => p.id === slug)
+  const { place } = usePlace(slug)
   const savedSet = useUIStore(s => s.savedSet)
   const toggleSave = useUIStore(s => s.toggleSave)
   const signedIn = useUIStore(s => s.signedIn)

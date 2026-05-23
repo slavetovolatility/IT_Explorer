@@ -3,7 +3,8 @@
 import { use, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useUIStore } from '@/store/ui'
-import { CATEGORIES, PLACES, FOOD_FILTERS } from '@/data'
+import { CATEGORIES, FOOD_FILTERS } from '@/data'
+import { usePlaces } from '@/hooks/usePlaces'
 import { Slot } from '@/components/ui/Slot'
 import { PlaceCard } from '@/components/ui/PlaceCard'
 import I from '@/components/ui/icons'
@@ -13,12 +14,13 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const cat = CATEGORIES.find(c => c.id === slug)
   const showCannabis = useUIStore(s => s.showCannabis)
   const city = useUIStore(s => s.city)
+  const { places: cityPlaces } = usePlaces(city)
   const [sortBy, setSortBy] = useState('rating')
 
   const Ic = cat ? (I[cat.icon] || I.dot) : I.dot
   const places = useMemo(
-    () => (cat ? PLACES.filter(p => (!p.optional || showCannabis) && p.category === cat.id) : []),
-    [cat, showCannabis]
+    () => (cat ? cityPlaces.filter(p => (!p.optional || showCannabis) && p.category === cat.id) : []),
+    [cat, showCannabis, cityPlaces]
   )
 
   const sorted = useMemo(() => {

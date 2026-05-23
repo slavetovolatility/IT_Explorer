@@ -3,7 +3,8 @@
 import { use } from 'react'
 import Link from 'next/link'
 import { useUIStore } from '@/store/ui'
-import { CATEGORIES, CITIES, PLACES } from '@/data'
+import { CATEGORIES, CITIES } from '@/data'
+import { usePlaces } from '@/hooks/usePlaces'
 import { Slot } from '@/components/ui/Slot'
 import { PlaceCard } from '@/components/ui/PlaceCard'
 import { CategoryTile } from '@/components/ui/CategoryTile'
@@ -37,6 +38,7 @@ export default function CityPage({ params }: { params: Promise<{ slug: string }>
   const { slug } = use(params)
   const city = CITIES.find(c => c.id === slug)
   const showCannabis = useUIStore(s => s.showCannabis)
+  const { places: cityPlaces } = usePlaces(slug)
 
   if (!city) {
     return (
@@ -48,7 +50,7 @@ export default function CityPage({ params }: { params: Promise<{ slug: string }>
     )
   }
 
-  const places = PLACES.filter(p => (!p.optional || showCannabis) && p.city === slug)
+  const places = cityPlaces.filter(p => !p.optional || showCannabis)
   const cats = CATEGORIES.filter(c => !c.optional || showCannabis).slice(0, 8)
   const featured = places.slice(0, 6)
   const intro = intros[slug] || intros.bangkok

@@ -1,9 +1,10 @@
 import { PLACES } from '@/data'
+import { fetchPlace } from '@/lib/db'
 import type { Metadata } from 'next'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  const place = PLACES.find(p => p.id === slug)
+  const place = (await fetchPlace(slug)) ?? PLACES.find(p => p.id === slug)
   if (!place) return {}
   return {
     title: `${place.name} — Inside Thailand`,
