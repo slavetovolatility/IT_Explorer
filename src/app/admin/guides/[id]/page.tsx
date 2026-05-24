@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { adminFetchGuides, type GuideRow } from '@/lib/db'
+import { GUIDES } from '@/data'
 import GuideEditor from '../GuideEditor'
 
 export default function EditGuidePage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +11,19 @@ export default function EditGuidePage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     params.then(({ id }) =>
       adminFetchGuides().then(guides => {
-        setGuide(guides.find(g => g.id === id) ?? null)
+        let found: GuideRow | undefined = guides.find(g => g.id === id)
+        if (!found) {
+          const sg = GUIDES.find(g => g.id === id)
+          if (sg) {
+            found = {
+              id: sg.id, title: sg.title, mins: sg.mins, area: sg.area,
+              body: sg.body, steps: sg.steps ?? [], warnings: sg.warnings ?? [],
+              cover_url: null, status: 'published', sort_order: 0,
+              created_at: '', updated_at: '',
+            }
+          }
+        }
+        setGuide(found ?? null)
       })
     )
   }, [params])
