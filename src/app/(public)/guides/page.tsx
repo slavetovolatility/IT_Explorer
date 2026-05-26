@@ -6,6 +6,8 @@ import I from '@/components/ui/icons'
 import type { Guide } from '@/types'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'How-to Guides — Inside Thailand',
   description: 'Practical step-by-step guides for living and travelling in Thailand — SIM cards, visas, bank accounts, and transport apps.',

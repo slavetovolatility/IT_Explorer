@@ -7,6 +7,8 @@ import { AdminEditLink } from '@/components/ui/AdminEditLink'
 import type { Guide } from '@/types'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return GUIDES.map(g => ({ slug: g.id }))
 }
