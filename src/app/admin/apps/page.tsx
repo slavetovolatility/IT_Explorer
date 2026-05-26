@@ -36,21 +36,26 @@ export default function AdminAppsPage() {
     if (!editing) return
     if (!editing.id.trim() || !editing.name.trim()) { setError('ID and Name are required'); return }
     setSaving(true); setError(null)
-    const payload: AppSavePayload = {
-      id: editing.id.trim(),
-      name: editing.name.trim(),
-      use_desc: editing.use_desc.trim(),
-      ios_url: editing.ios_url?.trim() || null,
-      android_url: editing.android_url?.trim() || null,
-      icon_char: editing.icon_char?.trim() || '',
-      sort_order: Number(editing.sort_order) || 0,
-      active: editing.active,
+    try {
+      const payload: AppSavePayload = {
+        id: editing.id.trim(),
+        name: editing.name.trim(),
+        use_desc: (editing.use_desc ?? '').trim(),
+        ios_url: editing.ios_url?.trim() || null,
+        android_url: editing.android_url?.trim() || null,
+        icon_char: editing.icon_char?.trim() || '',
+        sort_order: Number(editing.sort_order) || 0,
+        active: editing.active,
+      }
+      const { error: e } = await adminSaveApp(payload)
+      if (e) { setError(e); return }
+      setEditing(null)
+      reload()
+    } catch (err) {
+      setError(`Save failed: ${String(err)}. If you have an ad blocker, disable it for this page and try again.`)
+    } finally {
+      setSaving(false)
     }
-    const { error: e } = await adminSaveApp(payload)
-    setSaving(false)
-    if (e) { setError(e); return }
-    setEditing(null)
-    reload()
   }
 
   async function del(id: string) {

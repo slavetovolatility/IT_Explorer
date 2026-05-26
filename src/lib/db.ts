@@ -329,12 +329,18 @@ export interface AppSavePayload {
 
 export async function adminSaveApp(payload: AppSavePayload): Promise<{ error: string | null }> {
   if (!supabase) return { error: 'Not connected' }
-  const { error } = await supabase.from('essential_apps').upsert({
-    ...payload,
-    updated_at: new Date().toISOString(),
-  })
-  if (error) { console.error('[db] adminSaveApp:', error.message); return { error: error.message } }
-  return { error: null }
+  try {
+    const { error } = await supabase.from('essential_apps').upsert(
+      { ...payload, updated_at: new Date().toISOString() },
+      { onConflict: 'id' }
+    )
+    if (error) { console.error('[db] adminSaveApp:', error.message); return { error: error.message } }
+    return { error: null }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[db] adminSaveApp threw:', msg)
+    return { error: msg }
+  }
 }
 
 export async function adminDeleteApp(id: string): Promise<{ error: string | null }> {
