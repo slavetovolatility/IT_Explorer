@@ -9,7 +9,16 @@ import I from '@/components/ui/icons'
 function AdminShell({ children }: { children: React.ReactNode }) {
   const role = useUIStore(s => s.role)
   const signedIn = useUIStore(s => s.signedIn)
+  const authReady = useUIStore(s => s.authReady)
   const pathname = usePathname()
+
+  if (!authReady) {
+    return (
+      <main style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh', padding: 32 }}>
+        <div style={{ color: 'var(--muted)', fontSize: 14 }}>Loading…</div>
+      </main>
+    )
+  }
 
   if (!signedIn) {
     return (
@@ -64,6 +73,9 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </Link>
         <Link href="/admin/guides" style={{ ...navItem, background: isActive('/admin/guides') ? 'var(--bg-2)' : 'transparent', fontWeight: isActive('/admin/guides') ? 600 : 500 }}>
           <I.book size={16}/> Guides
+        </Link>
+        <Link href="/admin/apps" style={{ ...navItem, background: isActive('/admin/apps') ? 'var(--bg-2)' : 'transparent', fontWeight: isActive('/admin/apps') ? 600 : 500 }}>
+          <I.grid size={16}/> Apps
         </Link>
         <Link href="/admin/users" style={{ ...navItem, background: isActive('/admin/users') ? 'var(--bg-2)' : 'transparent', fontWeight: isActive('/admin/users') ? 600 : 500 }}>
           <I.users size={16}/> Users

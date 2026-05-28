@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { Place, Category, Guide, GuideStep } from '@/types'
+import type { Place, Category, Guide, GuideStep, EssentialApp } from '@/types'
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -113,6 +113,16 @@ export async function fetchPlace(slug: string): Promise<Place | null> {
   return data ? rowToPlace(data) : null
 }
 
+export async function fetchPlacesByStation(stationId: string): Promise<Place[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('places').select('*')
+    .eq('status', 'approved').eq('nearest_station', stationId)
+    .order('rating', { ascending: false })
+  if (error) { console.error('[db] fetchPlacesByStation:', error.message); return [] }
+  return (data ?? []).map(rowToPlace)
+}
+
 export async function fetchCategories(): Promise<Category[]> {
   if (!supabase) return []
   const { data, error } = await supabase
@@ -141,6 +151,28 @@ export async function deleteSaved(userId: string, placeSlug: string): Promise<vo
   const { error } = await supabase
     .from('saved_places').delete().eq('user_id', userId).eq('place_slug', placeSlug)
   if (error) console.error('[db] deleteSaved:', error.message)
+}
+
+// ── Recently viewed (per-user, cross-device) ───────────────────────────────────
+
+export async function trackPlaceView(userId: string, placeSlug: string): Promise<void> {
+  if (!supabase) return
+  const { error } = await supabase
+    .from('place_views')
+    .upsert(
+      { user_id: userId, place_slug: placeSlug, viewed_at: new Date().toISOString() },
+      { onConflict: 'user_id,place_slug' },
+    )
+  if (error) console.error('[db] trackPlaceView:', error.message)
+}
+
+export async function fetchRecentlyViewedSlugs(userId: string, limit = 12): Promise<string[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('place_views').select('place_slug').eq('user_id', userId)
+    .order('viewed_at', { ascending: false }).limit(limit)
+  if (error) { console.error('[db] fetchRecentlyViewedSlugs:', error.message); return [] }
+  return (data ?? []).map(r => r.place_slug)
 }
 
 export interface SubmissionPayload {
@@ -177,10 +209,19 @@ export async function insertSubmission(payload: SubmissionPayload): Promise<{ er
 
 export async function fetchUserRole(userId: string): Promise<'user' | 'admin'> {
   if (!supabase) return 'user'
-  const { data, error } = await supabase
-    .from('profiles').select('role').eq('id', userId).single()
-  if (error || !data) return 'user'
-  return data.role === 'admin' ? 'admin' : 'user'
+  try {
+    const result = await Promise.race([
+      supabase.from('profiles').select('role').eq('id', userId).single(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('role-timeout')), 6000)
+      ),
+    ])
+    const { data, error } = result
+    if (error) { console.error('[fetchUserRole]', error.message); return 'user' }
+    return data?.role === 'admin' ? 'admin' : 'user'
+  } catch {
+    return 'user'
+  }
 }
 
 // ── Public guides ─────────────────────────────────────────────────────────────
@@ -273,4 +314,118 @@ export async function adminUpdateUserRole(userId: string, role: 'user' | 'admin'
   const { error } = await supabase.from('profiles').update({ role }).eq('id', userId)
   if (error) { console.error('[db] adminUpdateUserRole:', error.message); return { error: error.message } }
   return { error: null }
+}
+
+// ── Essential apps ────────────────────────────────────────────────────────────
+
+export interface AppRow {
+  id: string
+  name: string
+  use_desc: string
+  ios_url: string | null
+  android_url: string | null
+  icon_char: string
+  sort_order: number
+  active: boolean
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToApp(r: Record<string, any>): EssentialApp {
+  return {
+    id: r.id,
+    name: r.name,
+    use: r.use_desc,
+    ios_url: r.ios_url ?? undefined,
+    android_url: r.android_url ?? undefined,
+    icon_char: r.icon_char ?? undefined,
+    sort_order: r.sort_order ?? 0,
+  }
+}
+
+export async function fetchPublicApps(): Promise<EssentialApp[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('essential_apps').select('*').eq('active', true).order('sort_order')
+  if (error) { console.error('[db] fetchPublicApps:', error.message); return [] }
+  return (data ?? []).map(rowToApp)
+}
+
+export async function adminFetchApps(): Promise<AppRow[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('essential_apps').select('*').order('sort_order')
+  if (error) { console.error('[db] adminFetchApps:', error.message); return [] }
+  return (data ?? []) as AppRow[]
+}
+
+export interface AppSavePayload {
+  id: string
+  name: string
+  use_desc: string
+  ios_url: string | null
+  android_url: string | null
+  icon_char: string
+  sort_order: number
+  active: boolean
+}
+
+async function getToken(): Promise<string | null> {
+  if (!supabase) return null
+  try {
+    const result = await Promise.race([
+      supabase.auth.getSession(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('auth-timeout')), 6000)
+      ),
+    ])
+    return result.data.session?.access_token ?? null
+  } catch {
+    return null
+  }
+}
+
+export async function adminSaveApp(payload: AppSavePayload): Promise<{ error: string | null }> {
+  try {
+    const token = await getToken()
+    if (!token) return { error: 'Not authenticated. Please sign in again.' }
+    const res = await fetch('/api/admin/apps', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15000),
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      return { error: `HTTP ${res.status}: ${text || res.statusText}` }
+    }
+    const json = await res.json()
+    return { error: json.error ?? null }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[db] adminSaveApp:', msg)
+    return { error: msg.includes('abort') ? 'Save timed out after 15s' : msg }
+  }
+}
+
+export async function adminDeleteApp(id: string): Promise<{ error: string | null }> {
+  try {
+    const token = await getToken()
+    if (!token) return { error: 'Not authenticated. Please sign in again.' }
+    const res = await fetch('/api/admin/apps', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ id }),
+      signal: AbortSignal.timeout(15000),
+    })
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      return { error: `HTTP ${res.status}: ${text || res.statusText}` }
+    }
+    const json = await res.json()
+    return { error: json.error ?? null }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[db] adminDeleteApp:', msg)
+    return { error: msg.includes('abort') ? 'Delete timed out after 15s' : msg }
+  }
 }
