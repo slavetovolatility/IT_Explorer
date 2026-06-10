@@ -110,6 +110,3 @@ subscribes to `onAuthStateChange`, syncing `signedIn` / `userId` / `userEmail` /
 3. In Supabase Auth, set the Site URL and add `https://*.vercel.app/**` to redirect URLs.
 4. Deploy.
 
-## Credits
-
-Designed in [Claude Design](https://claude.ai/design), implemented by Claude Code.
