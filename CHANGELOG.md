@@ -6,6 +6,16 @@ All significant changes to this project are documented here.
 
 ## [Unreleased] — active development on `claude/busy-rubin-5UsMp`
 
+### Share button & lint cleanup
+- **Share button** on every place detail page: on mobile triggers the native OS share sheet
+  (covers WhatsApp, Instagram, Snapchat, TikTok, iMessage — any installed app). On desktop
+  shows a popover with WhatsApp, LINE, X, Facebook, Telegram, and a copy-link button with
+  clipboard feedback ("Link copied!")
+- New `src/components/ui/ShareButton.tsx` component; `I.link` chain icon added to the icon set
+- Lint warnings cleared: `textMatch` moved to module scope so `useMemo` deps are satisfied;
+  `toggleTags` ternary-as-statement converted to `if/else`; `st.setQuery` destructured in
+  `MapFloating` to satisfy the `useEffect` dependency linter
+
 ### Security hardening, bug fixes & polish
 - **HTTP security headers** on every response (`next.config.ts`): `X-Frame-Options: DENY`,
   `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`,
